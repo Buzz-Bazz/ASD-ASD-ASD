@@ -189,10 +189,10 @@ int login() {
         if (ch == 13) {
             password[i] = '\0';
             break;
-        } else if (ch == 8 && i > 0) { 
+        } else if (ch == 8 && i > 0) {
             i--;
             printf("\b \b");
-        } else if (ch != 8 && ch >= 32 && ch <= 126) { 
+        } else if (ch != 8 && ch >= 32 && ch <= 126) {
             password[i++] = ch;
             printf("*");
         }
@@ -236,10 +236,10 @@ void menuRegistrasiUlang() {
             tombol = getch();
             if (tombol == 72) {
                 pilihan = (pilihan == 1) ? 3 : pilihan - 1;
-            } else if (tombol == 80) { 
+            } else if (tombol == 80) {
                 pilihan = (pilihan == 3) ? 1 : pilihan + 1;
             }
-        } else if (tombol == 13) { 
+        } else if (tombol == 13) {
             if (pilihan == 3) return;
 
             bersihkanLayar();
@@ -309,69 +309,152 @@ void transkripNilai() {
 }
 
 void registrasiMataKuliah() {
-    if (jumlahMK >= MAKS_MK) {
+    typedef struct {
+        char kode[MAKS_KODE];
+        char nama[MAKS_STRING];
+        int sksA;
+        int sksB;
+        char keterangan[MAKS_STRING];
+    } TemplateMK;
+
+    typedef struct {
+        char kode[MAKS_KODE];
+        char nama[MAKS_STRING];
+        int sksA;
+        int sksB;
+        char hari[20];
+        char jam[20];
+    } JadwalPilihan;
+
+    TemplateMK pilihanMK[] = {
+        {"TC105", "TBO", 3, 2, "Ineke Pakereng"},
+        {"TC112", "IMK", 3, 2, "Sinta "}
+    };
+
+    JadwalPilihan jadwalPilihan[2][2] = {
+        {
+            {"TC105B", "TEORI BAHASA DAN OTOMATA", 3, 2, "Senin", "08:00 - 09:40"},
+            {"TC105A", "TEORI BAHASA DAN OTOMATA", 3, 2, "Rabu", "13:00 - 14:40"}
+        },
+        {
+            {"TC112A", "INTERAKSI MANUSIA DAN KOMPUTER", 3, 2, "Selasa", "10:00 - 11:40"},
+            {"TC112C", "INTERAKSI MANUSIA DAN KOMPUTER", 3, 2, "Kamis", "15:00 - 16:40"}
+        }
+    };
+
+    int jumlahPilihan = sizeof(pilihanMK) / sizeof(pilihanMK[0]);
+    int pilihan = 1;
+    int tombol;
+
+    while (1) {
         bersihkanLayar();
         tampilkanHeader();
-        gotoxy(40, 10);
-        printf("Kapasitas mata kuliah penuh (%d dari %d).", jumlahMK, MAKS_MK);
-        pauseProgram();
-        return;
+        tampilkanDataMahasiswa();
+        tampilkanFooter();
+
+        gotoxy(60, 10);
+        printf("REGISTRASI MATA KULIAH");
+        gotoxy(40, 12);
+        garisPanjang();
+
+        for (int i = 0; i < jumlahPilihan; i++) {
+            gotoxy(40, 14 + i);
+            printf(pilihan == i + 1 ? ">> %s - %s" : "   %s - %s", pilihanMK[i].kode, pilihanMK[i].nama);
+        }
+
+        gotoxy(40, 15 + jumlahPilihan);
+        printf(pilihan == jumlahPilihan + 1 ? ">> Kembali" : "   Kembali");
+
+        tombol = getch();
+        if (tombol == 0 || tombol == 224) {
+            tombol = getch();
+            if (tombol == 72) {
+                pilihan = (pilihan == 1) ? jumlahPilihan + 1 : pilihan - 1;
+            } else if (tombol == 80) {
+                pilihan = (pilihan == jumlahPilihan + 1) ? 1 : pilihan + 1;
+            }
+        } else if (tombol == 13) {
+            if (pilihan == jumlahPilihan + 1) return;
+
+            int indexMK = pilihan - 1;
+            int pilihanJadwal = 1;
+
+            while (1) {
+                bersihkanLayar();
+                tampilkanHeader();
+                tampilkanDataMahasiswa();
+                tampilkanFooter();
+
+                gotoxy(50, 10);
+                printf("PILIH JADWAL UNTUK MATA KULIAH");
+                gotoxy(40, 12);
+                printf("Kode: %s", pilihanMK[indexMK].kode);
+                gotoxy(40, 13);
+                printf("Nama: %s", pilihanMK[indexMK].nama);
+                gotoxy(40, 14);
+                garisPanjang();
+
+                for (int j = 0; j < 2; j++) {
+                    gotoxy(40, 16 + j);
+                    printf(pilihanJadwal == j + 1 ? ">> [%s] %s | SKS A:%d B:%d | %s %s"
+                           : "   [%s] %s | SKS A:%d B:%d | %s %s",
+                           jadwalPilihan[indexMK][j].kode,
+                           jadwalPilihan[indexMK][j].nama,
+                           jadwalPilihan[indexMK][j].sksA,
+                           jadwalPilihan[indexMK][j].sksB,
+                           jadwalPilihan[indexMK][j].hari,
+                           jadwalPilihan[indexMK][j].jam);
+                }
+
+                gotoxy(40, 18);
+                printf(pilihanJadwal == 3 ? ">> Kembali" : "   Kembali");
+
+                tombol = getch();
+                if (tombol == 0 || tombol == 224) {
+                    tombol = getch();
+                    if (tombol == 72) {
+                        pilihanJadwal = (pilihanJadwal == 1) ? 3 : pilihanJadwal - 1;
+                    } else if (tombol == 80) {
+                        pilihanJadwal = (pilihanJadwal == 3) ? 1 : pilihanJadwal + 1;
+                    }
+                } else if (tombol == 13) {
+                    if (pilihanJadwal == 3) break;
+
+                    if (jumlahMK >= MAKS_MK || jumlahJadwal >= MAKS_JADWAL) {
+                        gotoxy(40, 20);
+                        printf("Kapasitas mata kuliah atau jadwal penuh.");
+                        pauseProgram();
+                        return;
+                    }
+
+                    JadwalPilihan *jp = &jadwalPilihan[indexMK][pilihanJadwal - 1];
+
+                    strcpy(mk[jumlahMK].kode, jp->kode);
+                    strcpy(mk[jumlahMK].nama, jp->nama);
+                    mk[jumlahMK].sksA = jp->sksA;
+                    mk[jumlahMK].sksB = jp->sksB;
+                    strcpy(mk[jumlahMK].keterangan, pilihanMK[indexMK].keterangan);
+                    jumlahMK++;
+
+                    strcpy(jadwal[jumlahJadwal].kode, jp->kode);
+                    strcpy(jadwal[jumlahJadwal].nama, jp->nama);
+                    strcpy(jadwal[jumlahJadwal].hari, jp->hari);
+                    strcpy(jadwal[jumlahJadwal].jam, jp->jam);
+                    jumlahJadwal++;
+
+                    gotoxy(40, 20);
+                    printf("Mata kuliah dan jadwal berhasil ditambahkan!");
+                    pauseProgram();
+                    return;
+                }
+            }
+        }
     }
-
-    bersihkanLayar();
-    tampilkanHeader();
-    tampilkanDataMahasiswa();
-
-    gotoxy(55, 10);
-    printf("REGISTRASI MATA KULIAH BARU");
-    gotoxy(40, 12);
-    garisPanjang();
-
-    gotoxy(40, 14);
-    printf("Masukkan kode mata kuliah: ");
-    if (scanf("%14s", mk[jumlahMK].kode) != 1) {
-        printf("Input tidak valid!");
-        pauseProgram();
-        return;
-    }
-    fflush(stdin);
-
-    gotoxy(40, 15);
-    printf("Masukkan nama mata kuliah: ");
-    fgets(mk[jumlahMK].nama, sizeof(mk[jumlahMK].nama), stdin);
-    mk[jumlahMK].nama[strcspn(mk[jumlahMK].nama, "\n")] = '\0';
-
-    gotoxy(40, 16);
-    printf("Masukkan SKS A: ");
-    if (scanf("%d", &mk[jumlahMK].sksA) != 1 || mk[jumlahMK].sksA < 0) {
-        printf("Input SKS tidak valid!");
-        pauseProgram();
-        return;
-    }
-
-    gotoxy(40, 17);
-    printf("Masukkan SKS B: ");
-    if (scanf("%d", &mk[jumlahMK].sksB) != 1 || mk[jumlahMK].sksB < 0) {
-        printf("Input SKS tidak valid!");
-        pauseProgram();
-        return;
-    }
-    fflush(stdin);
-
-    gotoxy(40, 18);
-    printf("Masukkan keterangan: ");
-    fgets(mk[jumlahMK].keterangan, sizeof(mk[jumlahMK].keterangan), stdin);
-    mk[jumlahMK].keterangan[strcspn(mk[jumlahMK].keterangan, "\n")] = '\0';
-
-    jumlahMK++;
-
-    gotoxy(40, 20);
-    printf("Mata kuliah berhasil ditambahkan!");
-    pauseProgram();
 }
 
+
 void kartuStudi() {
-    int pilihanMenu = 0; 
+    int pilihanMenu = 0;
 
     while (1) {
         bersihkanLayar();
@@ -672,32 +755,28 @@ void menuJadwalKuliah() {
         gotoxy(40, 13);
         printf(pilihan == 1 ? ">> Tampilkan Jadwal" : "   Tampilkan Jadwal");
         gotoxy(40, 14);
-        printf(pilihan == 2 ? ">> Registrasi Jadwal" : "   Registrasi Jadwal");
-        gotoxy(40, 15);
-        printf(pilihan == 3 ? ">> Kembali" : "   Kembali");
+        printf(pilihan == 2 ? ">> Kembali" : "   Kembali");
 
         tombol = getch();
         if (tombol == 0 || tombol == 224) {
             tombol = getch();
-            if (tombol == 72) { 
-                pilihan = (pilihan == 1) ? 3 : pilihan - 1;
-            } else if (tombol == 80) { 
-                pilihan = (pilihan == 3) ? 1 : pilihan + 1;
+            if (tombol == 72) {
+                pilihan = (pilihan == 1) ? 2 : 1;
+            } else if (tombol == 80) {
+                pilihan = (pilihan == 2) ? 1 : 2;
             }
-        } else if (tombol == 13) { 
+        } else if (tombol == 13) {
             switch (pilihan) {
                 case 1:
                     tampilkanJadwalKuliah();
                     break;
                 case 2:
-                    registrasiJadwalKuliah();
-                    break;
-                case 3:
                     return;
             }
         }
     }
 }
+
 
 void tagihan() {
     bersihkanLayar();
@@ -705,8 +784,8 @@ void tagihan() {
     tampilkanDataMahasiswa();
     tampilkanFooter();
 
-    gotoxy(77, 10);
-    printf("TAGIHAN");
+    gotoxy(60, 10);
+    printf("TAGIHAN PERKULIAHAN");
 
     if (jumlahJadwal == 0) {
         gotoxy(40, 12);
@@ -720,14 +799,20 @@ void tagihan() {
     float totalBiaya = 0.0;
 
     gotoxy(40, 12);
-    printf("NO.                       ITEMS                       JUMLAH      SKS B");
+    garisPanjang();
+    gotoxy(40, 13);
+    printf("No  Kode     Mata Kuliah                        SKS B   Biaya (Rp)");
+    gotoxy(40, 14);
+    garisPanjang();
+
     for (int i = 0; i < jumlahJadwal; i++) {
         int found = 0;
         for (int j = 0; j < jumlahMK; j++) {
             if (strcmp(jadwal[i].kode, mk[j].kode) == 0) {
                 float biayaMK = 0.0;
+                int sksB = mk[j].sksB;
 
-                switch (mk[j].sksB) {
+                switch (sksB) {
                     case 1:
                         biayaMK = 250000.0;
                         break;
@@ -741,79 +826,128 @@ void tagihan() {
                         biayaMK = 1000000.0;
                         break;
                     default:
-                        biayaMK = 0.0; 
+                        biayaMK = sksB * 250000.0;
                         break;
                 }
 
-                biayaMK += mk[j].sksB * 100000.0; 
+                biayaMK += sksB * 100000.0;
 
-                gotoxy(40, 13 + i);
-                printf("%-3d %-40s %-10.2f %-10d", i + 1, mk[j].nama, biayaMK, mk[j].sksB);
+                gotoxy(40, 15 + i);
+                printf("%-3d %-8s %-30s %-6d Rp %-10.2f",
+                       i + 1,
+                       mk[j].kode,
+                       mk[j].nama,
+                       sksB,
+                       biayaMK);
 
                 totalBiaya += biayaMK;
                 found = 1;
                 break;
             }
         }
+
         if (!found) {
-            gotoxy(40, 13 + i);
-            printf("%-3d %-40s %-10s %-10s", i + 1, jadwal[i].nama, "N/A", "N/A");
+            gotoxy(40, 15 + i);
+            printf("%-3d %-8s %-30s %-6s %-s", i + 1, jadwal[i].kode, jadwal[i].nama, "N/A", "N/A");
         }
     }
 
-    gotoxy(40, 14 + jumlahJadwal);
+    gotoxy(40, 16 + jumlahJadwal);
     garisPanjang();
-    gotoxy(40, 15 + jumlahJadwal);
-    printf("Total Biaya: Rp %.2f", totalBiaya);
+    gotoxy(40, 17 + jumlahJadwal);
+    printf("Total Tagihan: Rp %.2f", totalBiaya);
 
     pauseProgram();
 }
 
+
 void inputPoin() {
-    char namaKegiatan[50];
+    char namaKegiatan[MAKS_STRING];
     int poin;
+
+    bersihkanLayar();
+    tampilkanHeader();
+    tampilkanDataMahasiswa();
+    tampilkanFooter();
+
+    gotoxy(60, 10);
+    printf("INPUT POIN KEAKTIFAN");
+
+    if (keaktifan.jumlahKegiatan >= MAKS_KEGIATAN) {
+        gotoxy(40, 12);
+        printf("Penyimpanan kegiatan sudah penuh.");
+        pauseProgram();
+        return;
+    }
+
     fflush(stdin);
-    gotoxy(40, 14);
+    gotoxy(40, 13);
     printf("Masukkan nama kegiatan: ");
     fgets(namaKegiatan, sizeof(namaKegiatan), stdin);
+    namaKegiatan[strcspn(namaKegiatan, "\n")] = '\0';
 
-    size_t len = strlen(namaKegiatan);
-    if (len > 0 && namaKegiatan[len-1] == '\n') {
-        namaKegiatan[len-1] = '\0';
-    }
-    gotoxy(40, 15);
+    gotoxy(40, 14);
     printf("Masukkan poin keaktifan: ");
-    scanf("%d", &poin);
-    if (keaktifan.jumlahKegiatan < MAKS_KEGIATAN) {
-        strcpy(keaktifan.daftarKegiatan[keaktifan.jumlahKegiatan].namaKegiatan, namaKegiatan);
-        keaktifan.daftarKegiatan[keaktifan.jumlahKegiatan].poin = poin;
-        keaktifan.jumlahKegiatan++;
-        keaktifan.totalPoin += poin;
-        gotoxy(40, 17);
-        printf("Poin berhasil ditambahkan. Total poin: %d\n", keaktifan.totalPoin);
-    } else {
-        gotoxy(40, 17);
-        printf("Penyimpanan kegiatan sudah penuh.\n");
+    if (scanf("%d", &poin) != 1 || poin < 0) {
+        gotoxy(40, 15);
+        printf("Input tidak valid!");
+        pauseProgram();
+        return;
     }
-    printf("Tekan Enter untuk kembali ke menu...");
-    fflush(stdin);
-    getch();
+
+    strcpy(keaktifan.daftarKegiatan[keaktifan.jumlahKegiatan].namaKegiatan, namaKegiatan);
+    keaktifan.daftarKegiatan[keaktifan.jumlahKegiatan].poin = poin;
+    keaktifan.jumlahKegiatan++;
+    keaktifan.totalPoin += poin;
+
+    gotoxy(40, 16);
+    printf("Poin berhasil ditambahkan. Total poin saat ini: %d", keaktifan.totalPoin);
+
+    pauseProgram();
 }
+
 
 void lihatPoin() {
-    gotoxy(40, 14);
+    bersihkanLayar();
+    tampilkanHeader();
+    tampilkanDataMahasiswa();
+    tampilkanFooter();
+
+    gotoxy(60, 10);
+    printf("DAFTAR POIN KEAKTIFAN");
+
     if (keaktifan.jumlahKegiatan == 0) {
-        printf("Belum ada poin keaktifan yang dimasukkan.\n");
-    } else {
-        printf("Daftar kegiatan dan poin:\n");
-        for (int i = 0; i < keaktifan.jumlahKegiatan; i++) {
-            printf(" %d. %-40s : %d poin\n", i+1, keaktifan.daftarKegiatan[i].namaKegiatan, keaktifan.daftarKegiatan[i].poin);
-        }
-        printf("\nTotal poin keaktifan: %d\n", keaktifan.totalPoin);
+        gotoxy(40, 12);
+        printf("Belum ada poin keaktifan yang dimasukkan.");
+        pauseProgram();
+        return;
     }
+
+    gotoxy(40, 12);
+    garisPanjang();
+    gotoxy(40, 13);
+    printf("No  Nama Kegiatan                                Poin");
+    gotoxy(40, 14);
+    garisPanjang();
+
+    for (int i = 0; i < keaktifan.jumlahKegiatan; i++) {
+        gotoxy(40, 15 + i);
+        printf("%-3d %-40s %-4d",
+               i + 1,
+               keaktifan.daftarKegiatan[i].namaKegiatan,
+               keaktifan.daftarKegiatan[i].poin);
+    }
+
+    gotoxy(40, 16 + keaktifan.jumlahKegiatan);
+    garisPanjang();
+    gotoxy(40, 17 + keaktifan.jumlahKegiatan);
+    printf("Total Poin Keaktifan: %d", keaktifan.totalPoin);
+
+    gotoxy(40, 19 + keaktifan.jumlahKegiatan);
     printf("Tekan Enter untuk kembali ke menu...");
     getch();
 }
+
 
 void keaktifanMahasiswa() {
     int pilihan = 1;
@@ -889,7 +1023,7 @@ int main() {
         tombol = getch();
         if (tombol == 0 || tombol == 224) {
             tombol = getch();
-            if (tombol == 72) { 
+            if (tombol == 72) {
                 menu = (menu == 1) ? 9 : menu - 1;
             } else if (tombol == 80) {
                 menu = (menu == 9) ? 1 : menu + 1;
